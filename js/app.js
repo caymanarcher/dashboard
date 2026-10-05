@@ -20,4 +20,62 @@ function displayWeatherError() {
     document.getElementById('weather-display').innerHTML =
         `<p class="widget-error">Weather is not loading at the moment. Come back later!</p>`;
 }
+
+function initializeTheme() {
+    if (localStorage.getItem('dashboardTheme') === 'dark') {
+        document.body.classList.add('theme-dark');
+    }
+}
+function toggleTheme() {
+    const isDark = document.body.classList.toggle('theme-dark');
+    if (isDark) {
+        localStorage.setItem('dashboardTheme', 'dark');
+    } else {
+        localStorage.setItem('dashboardTheme', 'light');
+    }
+}
+document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
+initializeTheme();
+
+let allQuotes = [];
+const quoteButton = document.getElementById('new-quote-btn');
+let currentQuoteIndex = -1;
+
+
+function displayRandomQuote() {
+    const display = document.getElementById('quotes-display');
+    if (allQuotes.length === 0) {
+        display.innerHTML = `<p class="widget-error">No quotes to show.</p>`;
+        return;
+    }
+let randomIndex;
+do {
+    randomIndex = Math.floor(Math.random() * allQuotes.length);
+} while (randomIndex === currentQuoteIndex && allQuotes.length > 1);
+currentQuoteIndex = randomIndex;    
+const quote = allQuotes[randomIndex];
+    display.innerHTML = `
+        <div class="quote-card">
+            <div class="quote-text">"${quote.text}"</div>
+            <div class="quote-author">— ${quote.author}</div>
+        </div>`;
+}
+function loadQuotes() {
+    fetch('./data/quotes.json')
+        .then(response => response.json())
+        .then(data => {
+            allQuotes = data;
+            displayRandomQuote();
+            document.getElementById('new-quote-btn').disabled = false;
+            quoteButton.addEventListener('click', displayRandomQuote);
+
+        })
+        .catch(error => {
+            console.error('Error loading quotes:', error);
+            document.getElementById('quotes-display').innerHTML =
+                `<p class="widget-error">Quotes are not loading at the moment. Come back later!</p>`;
+        });
+}
+
 loadWeather();
+loadQuotes();
